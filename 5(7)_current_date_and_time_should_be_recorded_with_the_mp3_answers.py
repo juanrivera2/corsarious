@@ -13,8 +13,8 @@ from datetime import datetime
 from pymongo import MongoClient
 
 # MongoDB connection setup
-client = MongoClient('mongodb://localhost:27017/')
-db = client['your_database_name']
+client = MongoClient("mongodb+srv://AIDatabase:BTColombia2022@sandbox.bxohv.mongodb.net/?retryWrites=true&w=majority&appName=sandbox")
+db = client['AIDatabase']
 observations_collection = db['Observations']
 
 # Function to extract date and time from the filename
