@@ -8,7 +8,7 @@ from datetime import datetime
 app = FastAPI()
 
 # MongoDB connection (replace with your MongoDB Atlas URI if needed)
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient("mongodb+srv://AIDatabase:BTColombia2022@sandbox.bxohv.mongodb.net/?retryWrites=true&w=majority&appName=sandbox")
 db = client['AIDatabase']
 fs = gridfs.GridFS(db)
 reports_collection = db['Reports']
