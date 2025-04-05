@@ -10,8 +10,8 @@ Original file is located at
 from pymongo import MongoClient
 
 # MongoDB connection setup (do it once at the start)
-client = MongoClient('mongodb://localhost:27017/')
-db = client['your_database_name']
+client = MongoClient("mongodb+srv://AIDatabase:BTColombia2022@sandbox.bxohv.mongodb.net/?retryWrites=true&w=majority&appName=sandbox")
+db = client['AIDatabase']
 scripts_collection = db['Scripts']  # The collection where MP3s and transcriptions will be stored
 
 # Function to upload MP3 file info to MongoDB
