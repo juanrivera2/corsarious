@@ -13,7 +13,6 @@ Development: Automate cross-checking between table results and relevant checklis
 Increase questions extraction from checklist tables by incorporating specific domain knowledge (Nuclear Density - Ground Compaction).
 """
 
-!pip install easyocr pdf2image pytesseract opencv-python-headless Pillow
 
 import cv2
 import numpy as np
