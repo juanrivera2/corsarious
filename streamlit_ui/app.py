@@ -3,7 +3,7 @@
 import streamlit as st
 import requests
 
-API_URL = "corsarious-production.up.railway.app"  # Replace with actual Railway FastAPI URL
+API_URL = "https://corsarious-production.up.railway.app/"  # Replace with actual Railway FastAPI URL
 
 st.set_page_config(page_title="Checklist Pipeline", layout="centered")
 st.title("Checklist AI Pipeline")
