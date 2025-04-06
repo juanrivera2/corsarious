@@ -3,37 +3,37 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - main  # Trigger the CI/CD on push to main branch
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest  # Define the type of runner to use
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v2  # Checkout the code from your GitHub repo
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+      with:
+        version: latest  # Set the Docker Buildx version
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Log in to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}  # DockerHub username
+        password: ${{ secrets.DOCKER_PASSWORD }}  # DockerHub password
 
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: yourdockerhubusername/yourrepositoryname:latest
+    - name: Build and push Docker image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:${{ github.sha }} .  # Build the Docker image
+        docker push ${{ secrets.DOCKER_USERNAME }}/my-app:${{ github.sha }}  # Push the image to DockerHub (or another registry)
 
-      - name: Deploy to Railway
-        run: |
-          curl -X POST \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ secrets.RAILWAY_API_TOKEN }}" \
-          -d '{"image": "yourdockerhubusername/yourrepositoryname:latest"}' \
-          https://backboard.railway.app/v2/services/YOUR_SERVICE_ID/deploy
+    - name: Set up Railway CLI
+      run: |
+        curl -fsSL https://railway.app/install.sh | sh  # Install Railway CLI
+        railway login --apiKey ${{ secrets.RAILWAY_API_KEY }}  # Login using Railway API key
 
-::contentReference[oaicite:26]{index=26}
+    - name: Deploy to Railway
+      run: |
+        railway up --projectId ${{ secrets.RAILWAY_PROJECT_ID }}  # Deploy to Railway
