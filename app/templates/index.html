@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head><title>Checklist AI Pipeline</title></head>
+<body>
+  <h1>Run Checklist AI Pipeline</h1>
+  <button onclick="startPipeline()">Start</button>
+  <p id="status"></p>
+
+  <script>
+    async function startPipeline() {
+      const res = await fetch('/run-pipeline/', { method: 'POST' });
+      const data = await res.json();
+      document.getElementById("status").innerText = data.message;
+    }
+  </script>
+</body>
+</html>
