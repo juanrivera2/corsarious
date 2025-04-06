@@ -1,13 +1,20 @@
-# Use an official Python runtime as a parent image
+# Use slim Python base image
 FROM python:3.9-slim
 
-# Set the working directory in the container
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
+# Install system dependencies: git and ffmpeg
+RUN apt-get update && \
+    apt-get install -y git ffmpeg && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the app code into the container
 COPY . /app
 
-# Install any needed dependencies
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install jupyter and papermill for executing notebooks
