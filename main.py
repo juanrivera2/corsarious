@@ -1,22 +1,28 @@
-from fastapi import FastAPI
-import subprocess
+# streamlit_ui/app.py
 
-app = FastAPI()
+import streamlit as st
+import requests
 
-@app.get("/run-checklist-conversion")
-def run_checklist_conversion():
-    try:
-        # Run the script and capture the output
-        result = subprocess.run(["python", "1_test_converting_a_checklist.py"], capture_output=True, text=True)
+API_URL = "corsarious-production.up.railway.app"  # Replace with actual Railway FastAPI URL
 
-        return {
-            "status": "success" if result.returncode == 0 else "error",
-            "stdout": result.stdout,
-            "stderr": result.stderr
-        }
+st.set_page_config(page_title="Checklist Pipeline", layout="centered")
+st.title("Checklist AI Pipeline")
 
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": str(e)
-        }
+if st.button("Run Checklist Conversion"):
+    with st.spinner("Running pipeline..."):
+        try:
+            response = requests.get(f"{API_URL}/run-checklist-conversion")
+            if response.ok:
+                data = response.json()
+                st.success("Pipeline completed successfully!" if data["status"] == "success" else "Pipeline finished with errors.")
+                
+                st.subheader("Console Output")
+                st.code(data.get("stdout", ""), language="bash")
+
+                if data.get("stderr"):
+                    st.subheader("Errors")
+                    st.error(data["stderr"])
+            else:
+                st.error("Failed to reach FastAPI endpoint.")
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
