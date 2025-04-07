@@ -1,28 +1,31 @@
-# streamlit_ui/app.py
-
 import streamlit as st
 import requests
 
-API_URL = "https://corsarious-production.up.railway.app/"  # Replace with actual Railway FastAPI URL
+# FastAPI URL
+API_URL = "https://corsarious-production.up.railway.app/"  # Replace with the actual FastAPI URL
 
-st.set_page_config(page_title="Checklist Pipeline", layout="centered")
+# Streamlit UI Setup
+st.set_page_config(page_title="Checklist AI Pipeline", layout="centered")
 st.title("Checklist AI Pipeline")
 
-if st.button("Run Checklist Conversion"):
-    with st.spinner("Running pipeline..."):
-        try:
-            response = requests.get(f"{API_URL}/run-checklist-conversion")
-            if response.ok:
-                data = response.json()
-                st.success("Pipeline completed successfully!" if data["status"] == "success" else "Pipeline finished with errors.")
-                
-                st.subheader("Console Output")
-                st.code(data.get("stdout", ""), language="bash")
+# File Upload Section
+uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
 
-                if data.get("stderr"):
-                    st.subheader("Errors")
-                    st.error(data["stderr"])
-            else:
-                st.error("Failed to reach FastAPI endpoint.")
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
+# Process the image when uploaded
+if uploaded_file is not None:
+    st.write("Processing your file...")
+
+    try:
+        # Send the uploaded file to FastAPI for processing
+        files = {'file': uploaded_file.getvalue()}
+        response = requests.post(f"{API_URL}/process", files=files)
+
+        if response.status_code == 200:
+            result = response.json()
+            st.success(f"MP3 file generated successfully!")
+            st.audio(result['audio_url'])  # Play the generated MP3 file
+        else:
+            st.error(f"Error: {response.json()['message']}")
+
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
