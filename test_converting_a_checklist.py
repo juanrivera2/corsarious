@@ -9,6 +9,9 @@ import tempfile
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
 import shutil
+import torch
+
+print(torch.cuda.is_available())
 
 # Initialize the FastAPI app
 app = FastAPI()
