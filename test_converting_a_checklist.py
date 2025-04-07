@@ -13,7 +13,11 @@ import shutil
 
 app = FastAPI()
 
-reader = easyocr.Reader(['en'])
+def get_reader():
+    return easyocr.Reader(['en'])
+
+reader = get_reader()
+table_text = reader.readtext(roi)
 
 # Function to process image and detect tables
 def process_image_and_extract_tables(image):
