@@ -9,3 +9,4 @@ gtts
 requests
 numpy
 pydub
+python-multipart
