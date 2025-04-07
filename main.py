@@ -1,37 +1,31 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
-import shutil
-import tempfile
 from gtts import gTTS
-import os
+import tempfile
 
 app = FastAPI()
 
 @app.post("/process")
 async def process_file(file: UploadFile = File(...)):
     try:
-        # Temporary save the uploaded image
+        # Save the uploaded image file temporarily
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
         with open(temp_file.name, "wb") as f:
             f.write(await file.read())
 
-        # Process the image (e.g., OCR, audio conversion, etc.)
-        # For example, if you want to use OCR (easyocr) or generate text-to-speech (gTTS)
-        
-        # Sample processing - Here we use a basic text-to-speech generation from the image
-        # In reality, this part should process the image, extract data, etc.
-        text = "Sample extracted text from the image"  # Replace this with your actual processing logic
-        
+        # Assume the image is processed and some text is extracted (you can replace this with OCR processing)
+        text = "Sample text extracted from image"  # Replace with actual processing logic (e.g., OCR)
+
+        # Convert the extracted text to speech (MP3)
         tts = gTTS(text)
         audio_path = temp_file.name.replace(".png", ".mp3")
         tts.save(audio_path)
 
-        # Return the generated audio file URL or path
+        # Return the path to the generated MP3 file
         return JSONResponse(
-            content={"audio_url": audio_path},  # Here we return the path to the generated MP3
+            content={"audio_url": audio_path},
             status_code=200
         )
-        
     except Exception as e:
         return JSONResponse(
             content={"message": f"An error occurred: {str(e)}"},
