@@ -10,17 +10,28 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
 import shutil
 
-reader = get_reader()
-table_text = reader.readtext(roi)
+# Initialize the FastAPI app
 app = FastAPI()
 
+# Ensure temp directory exists
+os.makedirs("temp", exist_ok=True)
+
+# Function to initialize easyocr reader with GPU support
 def get_reader():
-    return easyocr.Reader(['en'])
+    try:
+        # Try using GPU for OCR, if available
+        reader = easyocr.Reader(['en'], gpu=True)  # Enable GPU if available
+        return reader
+    except Exception as e:
+        # If GPU is unavailable, fallback to CPU
+        print(f"Error initializing GPU: {e}")
+        reader = easyocr.Reader(['en'], gpu=False)  # Fallback to CPU if CUDA is unavailable
+        return reader
 
-    reader = get_reader()
-    table_text = reader.readtext(roi)
+# Initialize the reader
+reader = get_reader()
 
-# Function to process image and detect tables
+# Function to process image and extract tables using EasyOCR
 def process_image_and_extract_tables(image):
     img = np.array(image)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
@@ -86,7 +97,6 @@ async def process_file(file: UploadFile = File(...)):
     try:
         # Save the uploaded file temporarily
         temp_path = f"temp/{file.filename}"
-        os.makedirs("temp", exist_ok=True)
         with open(temp_path, "wb") as f:
             shutil.copyfileobj(file.file, f)
 
