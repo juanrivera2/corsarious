@@ -1,39 +1,30 @@
 from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import JSONResponse
-import shutil
+from fastapi.responses import StreamingResponse, JSONResponse
 import tempfile
+import io
 from gtts import gTTS
-import os
 
 app = FastAPI()
 
 @app.post("/process")
 async def process_file(file: UploadFile = File(...)):
     try:
-        # Temporary save the uploaded image
+        # 1. Save uploaded file temporarily
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
         with open(temp_file.name, "wb") as f:
             f.write(await file.read())
 
-        # Process the image (e.g., OCR, audio conversion, etc.)
-        # For example, if you want to use OCR (easyocr) or generate text-to-speech (gTTS)
-        
-        # Sample processing - Here we use a basic text-to-speech generation from the image
-        # In reality, this part should process the image, extract data, etc.
-        text = "Sample extracted text from the image"  # Replace this with your actual processing logic
-        
-        tts = gTTS(text)
-        audio_path = temp_file.name.replace(".png", ".mp3")
-        tts.save(audio_path)
+        # 2. Replace this with actual OCR logic (easyocr, cv2, etc.)
+        extracted_text = "This is a placeholder checklist text extracted from the image."
 
-        # Return the generated audio file URL or path
-        return JSONResponse(
-            content={"audio_url": audio_path},  # Here we return the path to the generated MP3
-            status_code=200
-        )
-        
+        # 3. Convert text to speech using gTTS
+        tts = gTTS(extracted_text)
+        mp3_io = io.BytesIO()
+        tts.write_to_fp(mp3_io)
+        mp3_io.seek(0)
+
+        # 4. Stream the audio back
+        return StreamingResponse(mp3_io, media_type="audio/mpeg")
+
     except Exception as e:
-        return JSONResponse(
-            content={"message": f"An error occurred: {str(e)}"},
-            status_code=500
-        )
+        return JSONResponse(content={"message": f"An error occurred: {str(e)}"}, status_code=500)
