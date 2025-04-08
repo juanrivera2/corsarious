@@ -5,12 +5,13 @@ pillow==11.1.0
 pdf2image==1.17.0
 pytesseract==0.3.13
 easyocr==1.7.2
+streamlit
 gtts
 requests
 numpy
 pydub
 python-multipart
-torch==1.13.0+cu117
-torchvision==0.14.0+cu117
-torchaudio==0.13.0
---extra-index-url https://download.pytorch.org/whl/cu117
+torch==2.1.0+cu118
+torchvision==0.16.0+cu118
+torchaudio==2.1.0+cu118
+--extra-index-url https://download.pytorch.org/whl/cu118
