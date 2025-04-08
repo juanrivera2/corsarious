@@ -1,7 +1,5 @@
-pandas
-streamlit
-google-auth
-google-auth-oauthlib
-google-auth-httplib2
-google-api-python-client
-rich
+google-auth==2.16.0
+google-auth-oauthlib==0.4.6
+google-auth-httplib2==0.1.0
+google-api-python-client==2.69.0
+streamlit==1.16.0
