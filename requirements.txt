@@ -15,3 +15,12 @@ torch==2.1.0+cu118
 torchvision==0.16.0+cu118
 torchaudio==2.1.0+cu118
 --extra-index-url https://download.pytorch.org/whl/cu118
+os
+re
+pickle5  # If you're using pickle with Python 3.7 or earlier
+pandas
+streamlit
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
