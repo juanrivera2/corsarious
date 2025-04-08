@@ -1,9 +1,7 @@
-os
-re
-pickle5  # If you're using pickle with Python 3.7 or earlier
 pandas
 streamlit
 google-auth
 google-auth-oauthlib
 google-auth-httplib2
 google-api-python-client
+rich
