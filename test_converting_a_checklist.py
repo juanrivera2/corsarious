@@ -21,17 +21,9 @@ os.makedirs("temp", exist_ok=True)
 
 # Function to initialize easyocr reader with GPU support
 def get_reader():
-    try:
-        # Try using GPU for OCR, if available
-        reader = easyocr.Reader(['en'], gpu=True)  # Enable GPU if available
-        return reader
-    except Exception as e:
-        # If GPU is unavailable, fallback to CPU
-        print(f"Error initializing GPU: {e}")
-        reader = easyocr.Reader(['en'], gpu=False)  # Fallback to CPU if CUDA is unavailable
-        return reader
+    print("🚀 CUDA available:", torch.cuda.is_available())  # Optional logging
+    return easyocr.Reader(['en'], gpu=torch.cuda.is_available())
 
-# Initialize the reader
 reader = get_reader()
 
 # Function to process image and extract tables using EasyOCR
