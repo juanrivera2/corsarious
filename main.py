@@ -6,67 +6,69 @@ import shutil
 import os
 import tempfile
 import requests
+import torch
 
-# Runpod URL for API call to trigger the workflow
-RUNPOD_URL = "https://api.runpod.ai/v2/f2hkgd82l435k0/run"
-
-# Function to call the Runpod API and execute the workflow
-def execute_runpod_workflow(file_path):
-    headers = {
-        "Content-Type": "application/json",
-        # Add any necessary headers like API key if required
-    }
-    payload = {
-        "file": file_path,
-        # Include other parameters required by the Runpod API
-    }
-    response = requests.post(RUNPOD_URL, json=payload, headers=headers)
-    return response.json()
-
-# 🔗 Import your processing logic
+# 🔗 Import your local image/audio logic
 from test_converting_a_checklist import process_image_and_extract_tables, generate_audio_from_text
 
-# Initialize FastAPI app
-app = FastAPI()
+# === RunPod Configuration ===
+RUNPOD_URL = "https://api.runpod.ai/v2/f2hkgd82l435k0/run"
+RUNPOD_API_KEY = os.getenv("RUNPOD_API_KEY")  # Recommended: set in your .env or environment variables
 
-# Create a static temp directory to serve files
+# === Create a temp directory
 TEMP_DIR = os.path.join(tempfile.gettempdir(), "checklist_temp")
 os.makedirs(TEMP_DIR, exist_ok=True)
 
-# Mount static file directory so /temp/audio.mp3 can be accessed via HTTP
+# === FastAPI app
+app = FastAPI()
 app.mount("/temp", StaticFiles(directory=TEMP_DIR), name="temp")
 
+# === RunPod fallback if GPU is not available
+def process_with_runpod(image_path):
+    with open(image_path, "rb") as img_file:
+        files = {
+            "file": (os.path.basename(image_path), img_file, "image/jpeg")
+        }
+        headers = {
+            "Authorization": f"Bearer {RUNPOD_API_KEY}"
+        }
+        response = requests.post(RUNPOD_URL, files=files, headers=headers)
 
+    if response.status_code == 200:
+        return response.json().get("output", "")
+    else:
+        return f"RunPod Error: {response.text}"
+
+# === Core logic switch between local GPU or RunPod
+def process_data(image_path):
+    if torch.cuda.is_available():
+        print("🚀 CUDA available — running locally")
+        image = Image.open(image_path)
+        return process_image_and_extract_tables(image)
+    else:
+        print("⚠️ No CUDA — using RunPod")
+        return process_with_runpod(image_path)
+
+# === FastAPI Endpoint
 @app.post("/process")
-def process_file(file: UploadFile = File(...)):
+async def process_file(file: UploadFile = File(...)):
     try:
-        # 1. Save uploaded image to temp folder
+        # Save uploaded file to temp path
         temp_image_path = os.path.join(TEMP_DIR, file.filename)
         with open(temp_image_path, "wb") as f:
             shutil.copyfileobj(file.file, f)
 
-        # 2. Execute the workflow with Runpod (send the file to Runpod for GPU processing)
-        runpod_response = execute_runpod_workflow(temp_image_path)
+        # Process file: Local GPU or RunPod
+        extracted_tables = process_data(temp_image_path)
 
-        # Check for Runpod response errors
-        if "error" in runpod_response:
-            return JSONResponse(status_code=500, content={"status": "error", "message": runpod_response["error"]})
-
-        # 3. Open image using PIL and process it
-        image = Image.open(temp_image_path)
-
-        # 4. 🔍 Process image and extract tables
-        detected_tables = process_image_and_extract_tables(image)
-
-        if not detected_tables:
+        if not extracted_tables:
             return JSONResponse(status_code=404, content={"status": "warning", "message": "No tables detected."})
 
-        # 5. 🎧 Generate MP3 from detected tables
-        mp3_filename = f"{os.path.splitext(file.filename)[0]}_extracted_tables.mp3"
+        # Generate MP3 from extracted text
+        mp3_filename = f"{os.path.splitext(file.filename)[0]}_output.mp3"
         mp3_path = os.path.join(TEMP_DIR, mp3_filename)
-        generate_audio_from_text(detected_tables, mp3_path)
+        generate_audio_from_text(extracted_tables, mp3_path)
 
-        # 6. Return path to audio file
         return JSONResponse(status_code=200, content={
             "status": "success",
             "audio_url": f"/temp/{mp3_filename}"
